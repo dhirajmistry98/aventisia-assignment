@@ -1,0 +1,383 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; }
+  .app { display: flex; flex-direction: column; height: 640px; background: #f9fafb; font-size: 13px; overflow: hidden; }
+  .header { height: 48px; background: #1E1B4B; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0; z-index: 50; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 22px; height: 22px; }
+  .logo-text { color: white; font-weight: 600; font-size: 14px; letter-spacing: -0.02em; }
+  .workspace-btn { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 4px 10px; color: white; font-size: 11px; font-weight: 500; cursor: pointer; }
+  .search-bar { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 6px 12px; flex: 1; max-width: 480px; margin: 0 48px; }
+  .search-bar input { background: transparent; border: none; outline: none; color: rgba(255,255,255,0.8); font-size: 12px; width: 100%; }
+  .search-bar input::placeholder { color: rgba(255,255,255,0.3); }
+  .kbd { color: rgba(255,255,255,0.2); font-size: 10px; font-family: monospace; border: 1px solid rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 3px; background: rgba(255,255,255,0.05); }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .bell-btn { color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: #4F46E5; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 700; ring: 2px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; }
+  .body { display: flex; flex: 1; overflow: hidden; }
+  .sidebar { width: 208px; background: white; border-right: 1px solid #f3f4f6; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+  .sidebar nav { padding: 8px 0; flex: 1; }
+  .section-label { padding: 14px 12px 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(156,163,175,0.8); }
+  .nav-list { list-style: none; padding: 0 8px; }
+  .nav-list + .nav-list { margin-top: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: #6b7280; letter-spacing: -0.01em; }
+  .nav-item:hover { color: #111827; background: #f9fafb; }
+  .nav-item.active { color: #4F46E5; background: rgba(79,70,229,0.05); border-left: 3px solid #4F46E5; padding-left: calc(10px - 3px); border-radius: 0 6px 6px 0; margin-left: 0; }
+  .nav-item.active .nav-icon { color: #4F46E5; }
+  .nav-icon { color: #9ca3af; flex-shrink: 0; }
+  .nav-item.active .nav-icon { color: #4F46E5; }
+  .main { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 20px; font-weight: 700; color: #111827; }
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+  .search-input { display: flex; align-items: center; gap: 8px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 12px; background: white; }
+  .search-input input { border: none; outline: none; font-size: 13px; color: #374151; width: 180px; }
+  .search-input input::placeholder { color: #9ca3af; }
+  .create-btn { display: flex; align-items: center; gap: 6px; background: #4F46E5; color: white; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .create-btn:hover { background: #4338CA; }
+  .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .kb-card { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; position: relative; min-height: 140px; }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-title { font-weight: 600; font-size: 14px; color: #111827; }
+  .dots-btn { color: #9ca3af; cursor: pointer; padding: 2px; border-radius: 4px; display: flex; }
+  .dots-btn:hover { background: #f3f4f6; color: #374151; }
+  .card-desc { font-size: 12px; color: #6b7280; line-height: 1.5; flex: 1; }
+  .card-footer { font-size: 11px; color: #9ca3af; margin-top: 8px; }
+  .card-footer span { color: #6b7280; font-weight: 500; }
+  .pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; }
+  .row-count { font-size: 13px; color: #6b7280; }
+  .pagination-right { display: flex; align-items: center; gap: 12px; }
+  .rows-per-page { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; }
+  .rows-select { border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px 24px 4px 10px; font-size: 13px; appearance: none; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 6px center; cursor: pointer; outline: none; }
+  .page-info { font-size: 13px; color: #374151; }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; background: white; color: #6b7280; font-size: 12px; }
+  .page-btn:hover { background: #f9fafb; }
+
+  /* Modal */
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); z-index: 100; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+  .overlay.visible { opacity: 1; pointer-events: all; }
+  .modal { position: absolute; right: 0; top: 0; bottom: 0; width: 380px; background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 101; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); transform: translateX(100%); }
+  .modal.visible { transform: translateX(0); }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px; border-bottom: 1px solid #f3f4f6; }
+  .modal-title { font-size: 15px; font-weight: 700; color: #111827; line-height: 1.3; }
+  .modal-subtitle { font-size: 11px; color: #6b7280; margin-top: 4px; font-weight: 500; }
+  .close-btn { padding: 4px; border-radius: 6px; color: #9ca3af; cursor: pointer; display: flex; flex-shrink: 0; }
+  .close-btn:hover { background: #f3f4f6; color: #111827; }
+  .modal-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { font-size: 13px; font-weight: 600; color: #374151; }
+  .required { color: #ef4444; margin-left: 2px; }
+  .field-input { border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #1f2937; outline: none; transition: border-color 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .field-input:focus { border-color: #4F46E5; }
+  .field-input::placeholder { color: #9ca3af; }
+  textarea.field-input { resize: none; font-family: inherit; }
+  .select-wrapper { position: relative; }
+  .select-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #1f2937; background: white; cursor: pointer; outline: none; transition: border-color 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .select-btn:hover { border-color: #d1d5db; }
+  .select-btn:focus { border-color: #4F46E5; }
+  .select-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 200; overflow: hidden; display: none; }
+  .select-dropdown.open { display: block; }
+  .select-option { width: 100%; text-align: left; padding: 8px 14px; font-size: 13px; color: #4b5563; cursor: pointer; background: none; border: none; }
+  .select-option:hover { background: #f9fafb; }
+  .select-option.selected { color: #4F46E5; background: rgba(79,70,229,0.05); font-weight: 600; }
+  .chevron { transition: transform 0.2s; color: #9ca3af; }
+  .chevron.rotated { transform: rotate(180deg); }
+  .modal-footer { padding: 20px; border-top: 1px solid #f3f4f6; display: flex; justify-content: flex-end; }
+  .create-modal-btn { background: #4F46E5; color: white; border: none; border-radius: 8px; padding: 8px 24px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+  .create-modal-btn:hover { background: #4338CA; }
+  .create-modal-btn:disabled { background: rgba(79,70,229,0.5); cursor: not-allowed; }
+</style>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" fill="#4F46E5"/>
+          <path d="M8 12C8 9.8 9.8 8 12 8s4 1.8 4 4-1.8 4-4 4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="2" fill="white"/>
+        </svg>
+        <span class="logo-text">Worcspace</span>
+      </div>
+      <div class="workspace-btn">
+        <span>Worcspace 1</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="search-bar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input placeholder="Search..." />
+      <span class="kbd">⌘K</span>
+    </div>
+    <div class="header-right">
+      <div class="bell-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="avatar">GK</div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <div class="section-label">My Projects</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+            Agents
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+            AI Models
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>
+            Library
+          </li>
+        </ul>
+        <div class="section-label">Orchestrator</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+            Published
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+            Machines
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+            Queues
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+            Triggers
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></span>
+            Jobs
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+            Executions
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            Vault
+          </li>
+          <li class="nav-item active">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+            Knowledge Base
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>
+            Key Store
+          </li>
+        </ul>
+        <div class="section-label">Admin</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+            Tenant
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="3"/><circle cx="4" cy="19" r="3"/><circle cx="20" cy="19" r="3"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="12" y1="14" x2="4" y2="16"/><line x1="12" y1="14" x2="20" y2="16"/></svg></span>
+            Integrations
+          </li>
+          <li class="nav-item">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+            Audit Logs
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main" id="main-content">
+      <div class="page-header">
+        <h1 class="page-title">Knowledge Base</h1>
+        <div class="header-actions">
+          <div class="search-input">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input placeholder="Search..." />
+          </div>
+          <button class="create-btn" onclick="openModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Create New
+          </button>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="cards-grid">
+        <!-- Cards rendered by JS -->
+      </div>
+
+      <div class="pagination">
+        <div class="row-count" id="row-count">6 rows</div>
+        <div class="pagination-right">
+          <div class="rows-per-page">
+            Rows per page
+            <select class="rows-select"><option>10</option><option>20</option><option>50</option></select>
+          </div>
+          <div class="page-info">page 1 of 1</div>
+          <div class="page-btns">
+            <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></button>
+            <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+            <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay -->
+      <div class="overlay" id="overlay" onclick="closeModal()"></div>
+
+      <!-- Modal -->
+      <div class="modal" id="modal">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Create New Knowledge Base</div>
+            <div class="modal-subtitle">Best for quick answers from documents, websites and text files.</div>
+          </div>
+          <button class="close-btn" onclick="closeModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="field">
+            <label class="field-label">Name (Cannot be edited later)<span class="required">*</span></label>
+            <input type="text" class="field-input" placeholder="Name" id="kb-name" oninput="checkForm()" />
+          </div>
+          <div class="field">
+            <label class="field-label">Description</label>
+            <textarea class="field-input" placeholder="Description" rows="4" id="kb-desc"></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">Vector Store<span class="required">*</span></label>
+            <div class="select-wrapper">
+              <button class="select-btn" id="vs-btn" onclick="toggleDropdown('vs-dd','vs-btn')">
+                <span id="vs-val">Qdrant</span>
+                <svg class="chevron" id="vs-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="select-dropdown" id="vs-dd">
+                <button class="select-option selected" onclick="selectOpt('vs','Qdrant')">Qdrant</button>
+                <button class="select-option" onclick="selectOpt('vs','Pinecone')">Pinecone</button>
+                <button class="select-option" onclick="selectOpt('vs','Weaviate')">Weaviate</button>
+                <button class="select-option" onclick="selectOpt('vs','Chroma')">Chroma</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">LLM Embedding Model<span class="required">*</span></label>
+            <div class="select-wrapper">
+              <button class="select-btn" id="llm-btn" onclick="toggleDropdown('llm-dd','llm-btn')">
+                <span id="llm-val">text-embedding-ada-002</span>
+                <svg class="chevron" id="llm-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="select-dropdown" id="llm-dd">
+                <button class="select-option selected" onclick="selectOpt('llm','text-embedding-ada-002')">text-embedding-ada-002</button>
+                <button class="select-option" onclick="selectOpt('llm','text-embedding-3-small')">text-embedding-3-small</button>
+                <button class="select-option" onclick="selectOpt('llm','text-embedding-3-large')">text-embedding-3-large</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="create-modal-btn" id="create-modal-btn" disabled onclick="createKB()">Create</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const CARDS = [
+  { id:'1', title:'Test', description:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy", createdOn:'14/07/2025' },
+  { id:'2', title:'Test', description:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy", createdOn:'14/07/2025' },
+  { id:'3', title:'Test', description:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy", createdOn:'14/07/2025' },
+  { id:'4', title:'Test', description:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy", createdOn:'14/07/2025' },
+  { id:'5', title:'Test', description:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy", createdOn:'14/07/2025' },
+  { id:'6', title:'Test', description:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy", createdOn:'14/07/2025' },
+];
+
+let cards = [...CARDS];
+
+function renderCards() {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = cards.map(c => `
+    <div class="kb-card">
+      <div class="card-header">
+        <div class="card-title">${c.title}</div>
+        <div class="dots-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+        </div>
+      </div>
+      <div class="card-desc">${c.description}</div>
+      <div class="card-footer">Created On: <span>${c.createdOn}</span></div>
+    </div>
+  `).join('');
+  document.getElementById('row-count').textContent = `${cards.length} rows`;
+}
+
+function openModal() {
+  document.getElementById('overlay').classList.add('visible');
+  document.getElementById('modal').classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('visible');
+  document.getElementById('modal').classList.remove('visible');
+  closeAllDropdowns();
+}
+
+function checkForm() {
+  const name = document.getElementById('kb-name').value.trim();
+  document.getElementById('create-modal-btn').disabled = !name;
+}
+
+function createKB() {
+  const name = document.getElementById('kb-name').value.trim();
+  if (!name) return;
+  const desc = document.getElementById('kb-desc').value;
+  const newCard = { id: String(cards.length+1), title: name, description: desc || 'No description provided.', createdOn: new Date().toLocaleDateString('en-GB') };
+  cards.push(newCard);
+  renderCards();
+  document.getElementById('kb-name').value = '';
+  document.getElementById('kb-desc').value = '';
+  document.getElementById('create-modal-btn').disabled = true;
+  closeModal();
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.select-dropdown').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.chevron').forEach(c => c.classList.remove('rotated'));
+}
+
+function toggleDropdown(ddId, btnId) {
+  const dd = document.getElementById(ddId);
+  const chev = document.getElementById(ddId.replace('-dd','-chev'));
+  const isOpen = dd.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) { dd.classList.add('open'); if(chev) chev.classList.add('rotated'); }
+}
+
+function selectOpt(prefix, val) {
+  document.getElementById(prefix+'-val').textContent = val;
+  document.querySelectorAll(`#${prefix}-dd .select-option`).forEach(o => {
+    o.classList.toggle('selected', o.textContent === val);
+  });
+  closeAllDropdowns();
+}
+
+document.addEventListener('mousedown', function(e) {
+  if (!e.target.closest('.select-wrapper')) closeAllDropdowns();
+});
+
+renderCards();
+</script>
